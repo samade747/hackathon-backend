@@ -5,9 +5,10 @@ import { rateLimit } from "express-rate-limit";
 import { connectDB } from "./config/default.js";
 import { authRoutes } from "./routes/auth.js";
 
+dotenv.config();
+
 const app = express();
 
-dotenv.config();
 app.use(
   cors({
     origin: "*",
@@ -17,24 +18,23 @@ app.use(
   })
 );
 
-// app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 connectDB();
 
-// const limiter = rateLimit({
-//   windowMs: 1 * 60 * 1000, // 15 minutes
-//   limit: 4, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
-//   message: "Too many requests, please try again later.",
-// });
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  limit: 4, // Limit each IP to 4 requests per `window`.
+  message: "Too many requests, please try again later.",
+});
 
-//////////////////
+app.use(limiter);
 
-// app.use(limiter);
-
-// routes
+// Routes
 app.use("/api/auth", authRoutes);
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server is Running at http://localhost:${process.env.PORT}`);
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server is running at http://localhost:${PORT}`);
 });
